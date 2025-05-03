@@ -73,7 +73,7 @@ const createServer = async container => {
       if (!translatedError.isServer) {
         return h.continue
       }
-      console.log(response)
+
       // penanganan server error sesuai kebutuhan
       const newResponse = h.response({
         status: 'error',

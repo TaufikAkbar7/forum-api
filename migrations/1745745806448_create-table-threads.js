@@ -20,6 +20,11 @@ exports.up = (pgm) => {
       references: '"users"',
       onDelete: 'cascade'
     },
+    created_at: {
+      type: 'timestamp',
+      notNull: true,
+      default: pgm.func('current_timestamp'),
+    },
   });
   pgm.createIndex('threads', 'owner');
 };

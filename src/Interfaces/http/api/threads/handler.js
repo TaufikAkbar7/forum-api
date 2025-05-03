@@ -1,10 +1,16 @@
+const AddThreadCommentUseCase = require('../../../../Applications/use_case/AddThreadCommentUseCase')
 const AddThreadUseCase = require('../../../../Applications/use_case/AddThreadUseCase')
+const DeleteThreadCommentUseCase = require('../../../../Applications/use_case/DeleteThreadCommentUseCase')
+const GetThreadUseCase = require('../../../../Applications/use_case/GetThreadUseCase')
 
 class ThreadsHandler {
   constructor(container) {
     this._container = container
 
     this.postThreadHandler = this.postThreadHandler.bind(this)
+    this.postThreadCommentsHandler = this.postThreadCommentsHandler.bind(this)
+    this.getThreadHandler = this.getThreadHandler.bind(this)
+    this.deleteThreadCommentHandler = this.deleteThreadCommentHandler.bind(this)
   }
 
   async postThreadHandler(request, h) {
@@ -22,6 +28,62 @@ class ThreadsHandler {
       }
     })
     response.code(201)
+    return response
+  }
+
+  async postThreadCommentsHandler(request, h) {
+    const { id: credentialId } = request.auth.credentials
+    const { id } = request.params
+    const addThreadCommentUseCase = this._container.getInstance(
+      AddThreadCommentUseCase.name
+    )
+    const addedComment = await addThreadCommentUseCase.execute({
+      ...request.payload,
+      threadId: id,
+      owner: credentialId
+    })
+
+    const response = h.response({
+      status: 'success',
+      data: {
+        addedComment
+      }
+    })
+    response.code(201)
+    return response
+  }
+
+  async getThreadHandler(request, h) {
+    const { id } = request.params
+    const getThreadUseCase = this._container.getInstance(GetThreadUseCase.name)
+    const thread = await getThreadUseCase.execute({
+      threadId: id
+    })
+
+    const response = h.response({
+      status: 'success',
+      data: thread
+    })
+    response.code(200)
+    return response
+  }
+
+  async deleteThreadCommentHandler(request, h) {
+    const { id: credentialId } = request.auth.credentials
+    const { id: threadId, commentId } = request.params
+    const deletedThreadUseCase = this._container.getInstance(
+      DeleteThreadCommentUseCase.name
+    )
+    await deletedThreadUseCase.execute({
+      threadId,
+      commentId,
+      authId: credentialId
+    })
+
+    const response = h.response({
+      status: 'success'
+    })
+    response.code(200)
     return response
   }
 }

@@ -11,7 +11,7 @@ class CreateThread {
 
   _verifyPayload({ title, body, owner }) {
     if (!title || !body || !owner) {
-      throw new Error('NEW_THREAD.NOT_CONTAIN_NEEDED_PROPERTY')
+      throw new Error('COMMON.NOT_CONTAIN_NEEDED_PROPERTY')
     }
 
     if (
@@ -19,7 +19,7 @@ class CreateThread {
       typeof body !== 'string' ||
       typeof owner !== 'string'
     ) {
-      throw new Error('NEW_THREAD.NOT_MEET_DATA_TYPE_SPECIFICATION')
+      throw new Error('COMMON.NOT_MEET_DATA_TYPE_SPECIFICATION')
     }
   }
 }

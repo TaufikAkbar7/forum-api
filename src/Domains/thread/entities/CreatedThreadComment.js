@@ -1,22 +1,22 @@
-class CreatedThread {
+class CreatedThreadComment {
   constructor(payload) {
     this._verifyPayload(payload)
 
-    const { id, title, owner } = payload
+    const { id, content, owner } = payload
 
     this.id = id
-    this.title = title
+    this.content = content
     this.owner = owner
   }
 
-  _verifyPayload({ id, title, owner }) {
-    if (!id || !title || !owner) {
+  _verifyPayload({ id, content, owner }) {
+    if (!id || !content || !owner) {
       throw new Error('COMMON.NOT_CONTAIN_NEEDED_PROPERTY')
     }
 
     if (
       typeof id !== 'string' ||
-      typeof title !== 'string' ||
+      typeof content !== 'string' ||
       typeof owner !== 'string'
     ) {
       throw new Error('COMMON.NOT_MEET_DATA_TYPE_SPECIFICATION')
@@ -24,4 +24,4 @@ class CreatedThread {
   }
 }
 
-module.exports = CreatedThread
+module.exports = CreatedThreadComment
