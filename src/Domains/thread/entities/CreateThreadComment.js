@@ -2,11 +2,12 @@ class CreateThreadComment {
   constructor(payload) {
     this._verifyPayload(payload)
 
-    const { threadId, content, owner } = payload
+    const { threadId, content, owner, commentId } = payload
 
     this.threadId = threadId
     this.content = content
     this.owner = owner
+    this.commentId = commentId
   }
 
   _verifyPayload({ threadId, content, owner }) {

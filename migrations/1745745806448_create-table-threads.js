@@ -30,7 +30,7 @@ exports.up = (pgm) => {
 };
   
 exports.down = (pgm) => {
-  pgm.dropTable('threads');
   pgm.dropIndex('threads', 'owner');
+  pgm.dropTable('threads');
 };
   

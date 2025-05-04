@@ -27,6 +27,22 @@ const routes = handler => [
     options: {
       auth: 'forumapi_jwt'
     }
+  },
+  {
+    method: 'POST',
+    path: '/threads/{id}/comments/{commentId}/replies',
+    handler: handler.postRepliesCommentHandler,
+    options: {
+      auth: 'forumapi_jwt'
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/threads/{id}/comments/{commentId}/replies/{replyId}',
+    handler: handler.deleteRepliesCommentHandler,
+    options: {
+      auth: 'forumapi_jwt'
+    }
   }
 ]
 

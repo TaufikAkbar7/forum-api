@@ -61,21 +61,58 @@ class GetThreadWithComments {
           comments: []
         }
       }
+
       if (
         item.comment_id &&
         item.comment_owner &&
         item.comment_date &&
         item.comment_content
       ) {
-        obj.comments.push({
+        const comment = {
           id: item.comment_id,
           username: item.comment_owner,
           date: item.comment_date,
-          content: item.comment_content
-        })
+          content: item.comment_is_delete
+            ? '**komentar telah dihapus**'
+            : item.comment_content,
+          replies: []
+        }
+
+        if (!item.reply_comment_id) {
+          obj.comments.push(comment)
+        } else {
+          const isCommentExists = obj.comments.findIndex(
+            com => com.id === item.comment_id
+          )
+          const reply = item.reply_is_delete
+            ? '**balasan telah dihapus**'
+            : item.reply_content
+
+          if (isCommentExists >= 0) {
+            obj.comments[isCommentExists].replies.push({
+              id: item.reply_id,
+              username: item.reply_owner,
+              date: item.reply_date,
+              content: reply
+            })
+          } else {
+            obj.comments.push({
+              ...comment,
+              replies: [
+                {
+                  id: item.reply_id,
+                  username: item.reply_owner,
+                  date: item.reply_date,
+                  content: reply
+                }
+              ]
+            })
+          }
+        }
       }
       return obj
     }, null)
+
     return mappingResults
   }
 }
