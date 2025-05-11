@@ -17,7 +17,7 @@
     "lint:fix": "eslint --fix ./src"
   },
   "keywords": [],
-  "author": "",
+  "author": "Taufik Akbar",
   "license": "ISC",
   "engines": {
     "node": ">=20.0.0"

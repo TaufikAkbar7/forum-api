@@ -1,15 +1,15 @@
-class ThreadRepository {
-  async addThread() {
+class CommentRepository {
+  async verifyAvailableComment() {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED')
   }
 
-  async verifyAvailableThread() {
+  async addComment() {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED')
   }
 
-  async getThread() {
+  async deleteComment() {
     throw new Error('THREAD_REPOSITORY.METHOD_NOT_IMPLEMENTED')
   }
 }
 
-module.exports = ThreadRepository
+module.exports = CommentRepository

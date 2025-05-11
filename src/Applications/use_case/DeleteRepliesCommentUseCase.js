@@ -1,18 +1,19 @@
-const DeleteThreadComment = require('../../Domains/thread/entities/DeleteThreadComment')
+const DeleteThreadComment = require('../../Domains/comment/entities/DeleteThreadComment')
 
 class DeleteRepliesCommentUseCase {
-  constructor({ threadRepository }) {
+  constructor({ threadRepository, commentRepository }) {
     this._threadRepository = threadRepository
+    this._commentRepository = commentRepository
   }
 
   async execute(useCasePayload) {
     const registerThread = new DeleteThreadComment(useCasePayload)
     await this._threadRepository.verifyAvailableThread(useCasePayload.threadId)
-    await this._threadRepository.verifyAvailableComment(
+    await this._commentRepository.verifyAvailableComment(
       useCasePayload.commentId
     )
     await this._threadRepository.verifyOwnerComment(useCasePayload)
-    return this._threadRepository.deleteComment(registerThread)
+    return this._commentRepository.deleteComment(registerThread)
   }
 }
 
