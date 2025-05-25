@@ -1,46 +1,38 @@
-const CreatedThread = require('../../Domains/thread/entities/CreatedThread')
-const ThreadRepository = require('../../Domains/thread/ThreadRepository')
-const NotFoundError = require('../../Commons/exceptions/NotFoundError')
-const GetThreadWithComments = require('../../Domains/thread/entities/GetThreadWithComments')
-const AuthorizationError = require('../../Commons/exceptions/AuthorizationError')
+/* istanbul ignore file */
+const AuthorizationError = require('../src/Commons/exceptions/AuthorizationError');
+const NotFoundError = require('../src/Commons/exceptions/NotFoundError');
+const GetThreadWithComments = require('../src/Domains/thread/entities/GetThreadWithComments');
+const pool = require('../src/Infrastructures/database/postgres/pool');
 
-class ThreadRepositoryPostgres extends ThreadRepository {
-  constructor(pool, idGenerator) {
-    super()
-    this._pool = pool
-    this._idGenerator = idGenerator
-  }
-
-  async addThread(addThread) {
-    const { title, body, owner } = addThread
-    const id = `thread-${this._idGenerator()}`
-
+const ThreadTableTestHelper = {
+  async addThread({
+    id = 'thread-123', title = 'thread-new', body = 'dicoding', owner = 'secret',
+  }) {
     const query = {
       text: 'INSERT INTO threads VALUES($1, $2, $3, $4) RETURNING id, title, body, owner',
       values: [id, title, body, owner]
     }
 
-    const result = await this._pool.query(query)
+    await pool.query(query);
+  },
 
-    return new CreatedThread({ ...result.rows[0] })
-  }
-
-  async verifyAvailableThread(id) {
+  async verifyAvailableThread(id = 'thread-123') {
     const query = {
       text: 'SELECT id FROM threads WHERE id = $1',
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const result = await pool.query(query)
 
     if (!result.rowCount) {
       throw new NotFoundError('Thread tidak tersedia')
     }
     return result.rows
-  }
+  },
 
-  async verifyOwnerComment(payload) {
-    const { threadId, authId, commentId } = payload
+  async verifyOwnerComment({
+    threadId = 'thread-123', authId = 'auth-123', commentId = 'comment-123'
+  }) {
     const query = {
       text: `
       SELECT
@@ -57,16 +49,15 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       values: [threadId, authId, commentId]
     }
 
-    const result = await this._pool.query(query)
+    const result = await pool.query(query)
 
     if (!result.rowCount) {
       throw new AuthorizationError('Owner comment tidak tersedia')
     }
     return result.rows
-  }
+  },
 
-  async getThread(payload) {
-    const { threadId } = payload
+  async getThread({ threadId = 'thread-123' }) {
     const query = {
       text: `
       SELECT
@@ -101,9 +92,14 @@ class ThreadRepositoryPostgres extends ThreadRepository {
       values: [threadId]
     }
 
-    const result = await this._pool.query(query)
-    return new GetThreadWithComments(result.rows)
-  }
-}
+    const result = await pool.query(query)
 
-module.exports = ThreadRepositoryPostgres
+    return new GetThreadWithComments(result.rows)
+  },
+
+  async cleanTable() {
+    await pool.query('DELETE FROM threads WHERE 1=1');
+  },
+};
+
+module.exports = ThreadTableTestHelper;

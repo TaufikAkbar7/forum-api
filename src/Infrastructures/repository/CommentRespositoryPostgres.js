@@ -20,6 +20,7 @@ class CommentRepositoryPostgres extends CommentRepository {
     if (!result.rowCount) {
       throw new NotFoundError('Comment tidak tersedia')
     }
+    return result.rows
   }
 
   async addComment(addComment) {

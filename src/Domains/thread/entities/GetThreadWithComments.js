@@ -8,27 +8,14 @@ class GetThreadWithComments {
   }
 
   _verifyPayload(data) {
-    const {
-      thread_id,
-      thread_title,
-      thread_body,
-      thread_owner,
-      thread_date,
-      comment_id,
-      comment_owner,
-      comment_date,
-      comment_content
-    } = data[0]
+    const { thread_id, thread_title, thread_body, thread_owner, thread_date } =
+      data[0]
     if (
       !thread_id ||
       !thread_title ||
       !thread_body ||
       !thread_owner ||
-      !thread_date ||
-      !comment_id ||
-      !comment_owner ||
-      !comment_date ||
-      !comment_content
+      !thread_date
     ) {
       throw new Error('COMMON.NOT_CONTAIN_NEEDED_PROPERTY')
     }
@@ -38,11 +25,7 @@ class GetThreadWithComments {
       typeof thread_title !== 'string' ||
       typeof thread_body !== 'string' ||
       typeof thread_owner !== 'string' ||
-      typeof thread_date !== 'object' ||
-      typeof comment_id !== 'string' ||
-      typeof comment_owner !== 'string' ||
-      typeof comment_content !== 'string' ||
-      typeof comment_date !== 'object'
+      typeof thread_date !== 'object'
     ) {
       throw new Error('COMMON.NOT_MEET_DATA_TYPE_SPECIFICATION')
     }
