@@ -7,6 +7,7 @@ const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper')
 const CommentTableTestHelper = require('../../../../tests/CommentTableTestHelper')
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError')
 const GetThread = require('../../../Domains/thread/entities/GetThread')
+const CreatedThread = require('../../../Domains/thread/entities/CreatedThread')
 
 describe('ThreadRepositoryPostgres', () => {
   const fakeIdGenerator = () => '123'
@@ -43,9 +44,16 @@ describe('ThreadRepositoryPostgres', () => {
       )
 
       // Action
-      await threadRepositoryPostgres.addThread(newThread)
+      const result = await threadRepositoryPostgres.addThread(newThread)
 
       // Assert
+      expect(result).toStrictEqual(
+        new CreatedThread({
+          id: 'thread-123',
+          title: 'test thread',
+          owner: 'user-123'
+        })
+      )
       await expect(
         threadRepositoryPostgres.verifyAvailableThread('thread-322')
       ).rejects.toThrowError(new NotFoundError('Thread tidak tersedia'))
@@ -80,6 +88,30 @@ describe('ThreadRepositoryPostgres', () => {
       const thread =
         await ThreadTableTestHelper.verifyAvailableThread('thread-123')
       expect(thread).toHaveLength(1)
+    })
+
+    it('should return id when thread available', async () => {
+      await UsersTableTestHelper.addUser({
+        username: 'dicoding',
+        password: 'secret_password'
+      })
+      const users = await UsersTableTestHelper.findUsersById('user-123')
+      expect(users).toHaveLength(1)
+
+      const threadRepositoryPostgres = new ThreadRepositoryPostgres(
+        pool,
+        fakeIdGenerator
+      )
+      await threadRepositoryPostgres.addThread({
+        title: 'title thread',
+        body: 'body thread',
+        owner: 'user-123'
+      })
+
+      const thread =
+        await threadRepositoryPostgres.verifyAvailableThread('thread-123')
+      expect(thread).toHaveLength(1)
+      expect(thread).toStrictEqual([{ id: 'thread-123' }])
     })
   })
 

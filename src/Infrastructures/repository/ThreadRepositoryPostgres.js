@@ -102,6 +102,7 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     }
 
     const result = await this._pool.query(query)
+
     return new GetThreadWithComments(result.rows)
   }
 }

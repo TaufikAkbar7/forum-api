@@ -189,6 +189,25 @@ describe('CommentRepositoryPostgres', () => {
       })
 
       expect(result).toBe(undefined)
+
+      const getThread = await ThreadTableTestHelper.getThread('thread-123')
+
+      expect(getThread.thread).toStrictEqual({
+        id: 'thread-123',
+        title: 'title thread',
+        body: 'body thread',
+        date: getThread.thread.date,
+        username: 'dicoding',
+        comments: [
+          {
+            id: 'comment-123',
+            username: 'dicoding',
+            date: getThread.thread.comments[0].date,
+            content: '**komentar telah dihapus**',
+            replies: []
+          }
+        ]
+      })
     })
   })
 })

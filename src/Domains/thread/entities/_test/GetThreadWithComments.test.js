@@ -80,4 +80,139 @@ describe('a GetThreadWithComments entities', () => {
     // Assert
     expect(thread).toStrictEqual(exampleResult)
   })
+
+  it('should return comment deleted as `komentar telah dihapus`', () => {
+    // Arrange
+    const payload = [
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-123',
+        comment_content: 'test comment',
+        comment_owner: 'dicoding',
+        comment_date: new Date(),
+        comment_is_delete: true
+      },
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-1234',
+        comment_content: 'test comment22',
+        comment_owner: 'dicoding22',
+        comment_date: new Date(),
+        comment_is_delete: false
+      }
+    ]
+    const exampleResult = {
+      id: 'thread-123',
+      title: 'title thread',
+      body: 'body thread',
+      date: payload[0].thread_date,
+      username: 'dicoding',
+      comments: [
+        {
+          id: payload[0].comment_id,
+          username: payload[0].comment_owner,
+          date: payload[0].comment_date,
+          content: '**komentar telah dihapus**',
+          replies: []
+        },
+        {
+          id: payload[1].comment_id,
+          username: payload[1].comment_owner,
+          date: payload[1].comment_date,
+          content: payload[1].comment_content,
+          replies: []
+        }
+      ]
+    }
+
+    // Action
+    const { thread } = new GetThreadWithComments(payload)
+
+    // Assert
+    expect(thread).toStrictEqual(exampleResult)
+  })
+
+  it('should return replies deleted as `balasan telah dihapus`', () => {
+    // Arrange
+    const payload = [
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-123',
+        comment_content: 'test comment',
+        comment_owner: 'dicoding',
+        comment_date: new Date(),
+        comment_is_delete: false,
+        reply_comment_id: 'comment-123',
+        reply_id: 'comment-1234',
+        reply_content: 'test replies',
+        reply_owner: 'dicoding',
+        reply_date: new Date(),
+        reply_is_delete: true
+      },
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-123',
+        comment_content: 'test comment',
+        comment_owner: 'dicoding',
+        comment_date: new Date(),
+        comment_is_delete: false,
+        reply_comment_id: 'comment-123',
+        reply_id: 'comment-12345',
+        reply_content: 'test replies22',
+        reply_owner: 'dicoding22',
+        reply_date: new Date(),
+        reply_is_delete: false
+      }
+    ]
+    const exampleResult = {
+      id: 'thread-123',
+      title: 'title thread',
+      body: 'body thread',
+      date: payload[0].thread_date,
+      username: 'dicoding',
+      comments: [
+        {
+          id: 'comment-123',
+          username: 'dicoding',
+          date: payload[0].comment_date,
+          content: 'test comment',
+          replies: [
+            {
+              id: payload[0].reply_id,
+              username: payload[0].reply_owner,
+              date: payload[0].reply_date,
+              content: '**balasan telah dihapus**'
+            },
+            {
+              id: payload[1].reply_id,
+              username: payload[1].reply_owner,
+              date: payload[1].reply_date,
+              content: payload[1].reply_content
+            }
+          ]
+        }
+      ]
+    }
+
+    // Action
+    const { thread } = new GetThreadWithComments(payload)
+    // Assert
+    expect(thread).toStrictEqual(exampleResult)
+  })
 })
