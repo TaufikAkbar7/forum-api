@@ -27,7 +27,6 @@ const ThreadTableTestHelper = {
     if (!result.rowCount) {
       throw new NotFoundError('Thread tidak tersedia')
     }
-    return result.rows
   },
 
   async verifyOwnerComment({
@@ -54,7 +53,6 @@ const ThreadTableTestHelper = {
     if (!result.rowCount) {
       throw new AuthorizationError('Owner comment tidak tersedia')
     }
-    return result.rows
   },
 
   async getThread({ threadId = 'thread-123' }) {

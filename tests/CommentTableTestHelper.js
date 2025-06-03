@@ -15,7 +15,6 @@ const CommentTableTestHelper = {
         if (!result.rowCount) {
           throw new NotFoundError('Comment tidak tersedia')
         }
-        return result.rows
       },
     
       async addComment(addComment) {
@@ -44,6 +43,18 @@ const CommentTableTestHelper = {
           throw new NotFoundError('Comment gagal dihapus')
         }
       },
+
+      async getCommentById(id) {
+        const query = {
+          text: 'SELECT * FROM comments WHERE id = $1',
+          values: [id],
+        };
+    
+        const result = await pool.query(query);
+    
+        return result.rows[0];
+      },
+
       async cleanTable() {
         await pool.query('DELETE FROM comments WHERE 1=1');
       },

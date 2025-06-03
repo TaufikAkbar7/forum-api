@@ -4,6 +4,7 @@ const pool = require('../../database/postgres/pool')
 const UsersTableTestHelper = require('../../../../tests/UsersTableTestHelper')
 const CommentTableTestHelper = require('../../../../tests/CommentTableTestHelper')
 const CommentRepositoryPostgres = require('../CommentRespositoryPostgres')
+const CreatedThreadComment = require('../../../Domains/comment/entities/CreatedThreadComment')
 
 describe('CommentRepositoryPostgres', () => {
   const fakeIdGenerator = () => '123'
@@ -32,24 +33,24 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
         fakeIdGenerator
       )
 
-      await commentRepositoryPostgres.addComment({
+      const result = await commentRepositoryPostgres.addComment({
         content: 'test comment',
         owner: 'user-123',
         threadId: 'thread-123'
       })
 
-      const comment =
-        await commentRepositoryPostgres.verifyAvailableComment('comment-123')
-      expect(comment).toHaveLength(1)
+      expect(result).toStrictEqual(new CreatedThreadComment({
+        content: 'test comment',
+        owner: 'user-123',
+        id: 'comment-123'
+      }))
     })
 
     it('should success add replies', async () => {
@@ -74,9 +75,7 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -90,20 +89,20 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      const comment =
-        await CommentTableTestHelper.verifyAvailableComment('comment-155')
-      expect(comment).toHaveLength(1)
+      await expect(CommentTableTestHelper.verifyAvailableComment('comment-155')).resolves.not.toThrowError(NotFoundError)
 
-      await commentRepositoryPostgres.addComment({
+      const result = await commentRepositoryPostgres.addComment({
         content: 'test replies',
         owner: 'user-234',
         threadId: 'thread-123',
         commentId: 'comment-123'
       })
 
-      const replies =
-        await commentRepositoryPostgres.verifyAvailableComment('comment-123')
-      expect(replies).toHaveLength(1)
+      expect(result).toStrictEqual(new CreatedThreadComment({
+        content: 'test replies',
+        owner: 'user-234',
+        id: 'comment-123'
+      }))
     })
   })
 
@@ -114,6 +113,36 @@ describe('CommentRepositoryPostgres', () => {
       await expect(
         commentRepositoryPostgres.verifyAvailableComment('comment-123')
       ).rejects.toThrowError(new NotFoundError('Comment tidak tersedia'))
+    })
+
+    it('should success when comment available', async () => {
+      await UsersTableTestHelper.addUser({
+        username: 'dicoding',
+        password: 'secret_password'
+      })
+      const users = await UsersTableTestHelper.findUsersById('user-123')
+      expect(users).toHaveLength(1)
+
+      await ThreadTableTestHelper.addThread({
+        title: 'title thread',
+        body: 'body thread',
+        owner: 'user-123'
+      })
+
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+
+      const commentRepositoryPostgres = new CommentRepositoryPostgres(
+        pool,
+        fakeIdGenerator
+      )
+
+      await commentRepositoryPostgres.addComment({
+        content: 'test comment',
+        owner: 'user-123',
+        threadId: 'thread-123'
+      })
+
+      await expect(commentRepositoryPostgres.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
     })
   })
 
@@ -132,9 +161,7 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -163,9 +190,7 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -179,35 +204,17 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      const comment =
-        await CommentTableTestHelper.verifyAvailableComment('comment-123')
-      expect(comment).toHaveLength(1)
+      await expect(CommentTableTestHelper.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
 
       const result = await commentRepositoryPostgres.deleteComment({
         threadId: 'thread-123',
         commentId: 'comment-123'
       })
 
+      const getComment = await CommentTableTestHelper.getCommentById('comment-123')
+
+      expect(getComment.is_delete).toBe(true)
       expect(result).toBe(undefined)
-
-      const getThread = await ThreadTableTestHelper.getThread('thread-123')
-
-      expect(getThread.thread).toStrictEqual({
-        id: 'thread-123',
-        title: 'title thread',
-        body: 'body thread',
-        date: getThread.thread.date,
-        username: 'dicoding',
-        comments: [
-          {
-            id: 'comment-123',
-            username: 'dicoding',
-            date: getThread.thread.comments[0].date,
-            content: '**komentar telah dihapus**',
-            replies: []
-          }
-        ]
-      })
     })
   })
 })

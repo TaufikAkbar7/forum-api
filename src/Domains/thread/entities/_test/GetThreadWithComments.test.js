@@ -32,41 +32,51 @@ describe('a GetThreadWithComments entities', () => {
 
   it('should create getThreadWithComments object correctly', () => {
     // Arrange
-    const payload = {
-      thread_id: 'thread-123',
-      thread_title: 'title thread',
-      thread_body: 'body thread',
-      thread_owner: 'dicoding',
-      thread_date: new Date(),
-      comment_id: 'comment-123',
-      comment_content: 'test comment',
-      comment_owner: 'dicoding',
-      comment_date: new Date(),
-      comment_is_delete: false,
-      reply_comment_id: 'comment-123',
-      reply_id: 'comment-1234',
-      reply_content: 'test replies',
-      reply_owner: 'dicoding',
-      reply_date: new Date(),
-      reply_is_delete: false
-    }
+    const payload = [
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-123',
+        comment_content: 'test comment',
+        comment_owner: 'dicoding',
+        comment_date: new Date(),
+        comment_is_delete: false,
+        comment_parent_id: null
+      },
+      {
+        thread_id: 'thread-123',
+        thread_title: 'title thread',
+        thread_body: 'body thread',
+        thread_owner: 'dicoding',
+        thread_date: new Date(),
+        comment_id: 'comment-1234',
+        comment_content: 'test replies',
+        comment_owner: 'dicoding',
+        comment_date: new Date(),
+        comment_is_delete: false,
+        comment_parent_id: 'comment-123'
+      }
+    ]
     const exampleResult = {
       id: 'thread-123',
       title: 'title thread',
       body: 'body thread',
-      date: payload.thread_date,
+      date: payload[0].thread_date,
       username: 'dicoding',
       comments: [
         {
           id: 'comment-123',
           username: 'dicoding',
-          date: payload.comment_date,
+          date: payload[0].comment_date,
           content: 'test comment',
           replies: [
             {
               id: 'comment-1234',
               username: 'dicoding',
-              date: payload.reply_date,
+              date: payload[1].comment_date,
               content: 'test replies'
             }
           ]
@@ -75,7 +85,7 @@ describe('a GetThreadWithComments entities', () => {
     }
 
     // Action
-    const { thread } = new GetThreadWithComments([payload])
+    const { thread } = new GetThreadWithComments(payload)
 
     // Assert
     expect(thread).toStrictEqual(exampleResult)
@@ -94,7 +104,8 @@ describe('a GetThreadWithComments entities', () => {
         comment_content: 'test comment',
         comment_owner: 'dicoding',
         comment_date: new Date(),
-        comment_is_delete: true
+        comment_is_delete: true,
+        comment_parent_id: null
       },
       {
         thread_id: 'thread-123',
@@ -106,7 +117,8 @@ describe('a GetThreadWithComments entities', () => {
         comment_content: 'test comment22',
         comment_owner: 'dicoding22',
         comment_date: new Date(),
-        comment_is_delete: false
+        comment_is_delete: false,
+        comment_parent_id: null
       }
     ]
     const exampleResult = {
@@ -154,12 +166,7 @@ describe('a GetThreadWithComments entities', () => {
         comment_owner: 'dicoding',
         comment_date: new Date(),
         comment_is_delete: false,
-        reply_comment_id: 'comment-123',
-        reply_id: 'comment-1234',
-        reply_content: 'test replies',
-        reply_owner: 'dicoding',
-        reply_date: new Date(),
-        reply_is_delete: true
+        comment_parent_id: null
       },
       {
         thread_id: 'thread-123',
@@ -167,17 +174,12 @@ describe('a GetThreadWithComments entities', () => {
         thread_body: 'body thread',
         thread_owner: 'dicoding',
         thread_date: new Date(),
-        comment_id: 'comment-123',
-        comment_content: 'test comment',
+        comment_id: 'comment-1234',
+        comment_content: 'test replies',
         comment_owner: 'dicoding',
         comment_date: new Date(),
-        comment_is_delete: false,
-        reply_comment_id: 'comment-123',
-        reply_id: 'comment-12345',
-        reply_content: 'test replies22',
-        reply_owner: 'dicoding22',
-        reply_date: new Date(),
-        reply_is_delete: false
+        comment_is_delete: true,
+        comment_parent_id: 'comment-123'
       }
     ]
     const exampleResult = {
@@ -194,17 +196,11 @@ describe('a GetThreadWithComments entities', () => {
           content: 'test comment',
           replies: [
             {
-              id: payload[0].reply_id,
-              username: payload[0].reply_owner,
-              date: payload[0].reply_date,
+              id: payload[1].comment_id,
+              username: payload[1].comment_owner,
+              date: payload[1].comment_date,
               content: '**balasan telah dihapus**'
             },
-            {
-              id: payload[1].reply_id,
-              username: payload[1].reply_owner,
-              date: payload[1].reply_date,
-              content: payload[1].reply_content
-            }
           ]
         }
       ]

@@ -36,7 +36,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new NotFoundError('Thread tidak tersedia')
     }
-    return result.rows
   }
 
   async verifyOwnerComment(payload) {
@@ -62,7 +61,6 @@ class ThreadRepositoryPostgres extends ThreadRepository {
     if (!result.rowCount) {
       throw new AuthorizationError('Owner comment tidak tersedia')
     }
-    return result.rows
   }
 
   async getThread(payload) {
@@ -80,23 +78,13 @@ class ThreadRepositoryPostgres extends ThreadRepository {
         c.created_at as comment_date,
         c.content as comment_content,
         c.is_delete as comment_is_delete,
-        c2.id as reply_id,
-        c2.parent_id as reply_comment_id,
-        c2."content" as reply_content,
-        c2.created_at as reply_date,
-        c2.is_delete as reply_is_delete,
-        u3.username as reply_owner
+        c.parent_id as comment_parent_id
       FROM threads t 
-      INNER JOIN users u ON t."owner" = u.id 
-      LEFT JOIN (
-        SELECT * FROM comments
-        WHERE parent_id IS NULL
-      ) c ON c.thread_id = t.id
+      INNER JOIN users u ON t."owner" = u.id
+      LEFT JOIN comments c ON c.thread_id = t.id
       LEFT JOIN users u2 ON u2.id = c."owner"
-      LEFT JOIN "comments" c2 ON c2.parent_id = c.id 
-      LEFT JOIN users u3 ON u3.id = c2."owner" 
       WHERE t.id = $1
-      ORDER BY c.created_at ASC, c2.created_at ASC
+      ORDER BY c.created_at ASC
       `,
       values: [threadId]
     }

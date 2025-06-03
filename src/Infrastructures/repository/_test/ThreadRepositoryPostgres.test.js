@@ -8,6 +8,7 @@ const CommentTableTestHelper = require('../../../../tests/CommentTableTestHelper
 const AuthorizationError = require('../../../Commons/exceptions/AuthorizationError')
 const GetThread = require('../../../Domains/thread/entities/GetThread')
 const CreatedThread = require('../../../Domains/thread/entities/CreatedThread')
+const GetThreadWithComments = require('../../../Domains/thread/entities/GetThreadWithComments')
 
 describe('ThreadRepositoryPostgres', () => {
   const fakeIdGenerator = () => '123'
@@ -54,9 +55,6 @@ describe('ThreadRepositoryPostgres', () => {
           owner: 'user-123'
         })
       )
-      await expect(
-        threadRepositoryPostgres.verifyAvailableThread('thread-322')
-      ).rejects.toThrowError(new NotFoundError('Thread tidak tersedia'))
     })
   })
 
@@ -85,33 +83,7 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
-    })
-
-    it('should return id when thread available', async () => {
-      await UsersTableTestHelper.addUser({
-        username: 'dicoding',
-        password: 'secret_password'
-      })
-      const users = await UsersTableTestHelper.findUsersById('user-123')
-      expect(users).toHaveLength(1)
-
-      const threadRepositoryPostgres = new ThreadRepositoryPostgres(
-        pool,
-        fakeIdGenerator
-      )
-      await threadRepositoryPostgres.addThread({
-        title: 'title thread',
-        body: 'body thread',
-        owner: 'user-123'
-      })
-
-      const thread =
-        await threadRepositoryPostgres.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
-      expect(thread).toStrictEqual([{ id: 'thread-123' }])
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
     })
   })
 
@@ -130,9 +102,7 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {})
 
@@ -147,7 +117,7 @@ describe('ThreadRepositoryPostgres', () => {
       )
     })
 
-    it('should have length 1 when owner comment found', async () => {
+    it('should not throw auth error when owner comment exist', async () => {
       await UsersTableTestHelper.addUser({
         username: 'dicoding',
         password: 'secret_password'
@@ -161,9 +131,7 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       await CommentTableTestHelper.addComment({
         id: 'comment-123',
@@ -173,13 +141,17 @@ describe('ThreadRepositoryPostgres', () => {
       })
 
       const threadRepositoryPostgres = new ThreadRepositoryPostgres(pool, {})
-      const comment = await threadRepositoryPostgres.verifyOwnerComment({
+      await threadRepositoryPostgres.verifyOwnerComment({
         threadId: 'thread-123',
         authId: 'user-123',
         commentId: 'comment-123'
       })
 
-      expect(comment).toHaveLength(1)
+      await expect(threadRepositoryPostgres.verifyOwnerComment({
+        threadId: 'thread-123',
+        authId: 'user-123',
+        commentId: 'comment-123'
+      })).resolves.not.toThrowError(AuthorizationError)
     })
   })
 
@@ -199,23 +171,28 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       const registerThread = new GetThread({ threadId: 'thread-123' })
       const getThread = await threadRepositoryPostgres.getThread(registerThread)
       expect(getThread).toBeDefined()
       expect(getThread.thread.comments).toBeDefined()
       expect(getThread.thread.comments).toHaveLength(0)
-      expect(getThread.thread).toStrictEqual({
-        id: 'thread-123',
-        title: 'title thread',
-        body: 'body thread',
-        date: getThread.thread.date,
-        username: 'dicoding',
-        comments: []
-      })
+      expect(getThread).toStrictEqual(new GetThreadWithComments([
+        {
+          thread_id: 'thread-123',
+          thread_title: 'title thread',
+          thread_body: 'body thread',
+          thread_owner: 'dicoding',
+          thread_date: getThread.thread.date,
+          comment_id: null,
+          comment_content: null,
+          comment_owner: null,
+          comment_date: null,
+          comment_is_delete: false,
+          comment_parent_id: null
+        },
+      ]))
     })
 
     it('should return thread with comment and empty replies', async () => {
@@ -233,9 +210,7 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       await CommentTableTestHelper.addComment({
         id: 'comment-123',
@@ -243,9 +218,8 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123',
         threadId: 'thread-123'
       })
-      const comment =
-        await CommentTableTestHelper.verifyAvailableComment('comment-123')
-      expect(comment).toHaveLength(1)
+
+      await expect(CommentTableTestHelper.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
 
       const registerThread = new GetThread({ threadId: 'thread-123' })
       const getThread = await threadRepositoryPostgres.getThread(registerThread)
@@ -254,22 +228,21 @@ describe('ThreadRepositoryPostgres', () => {
       expect(getThread.thread.comments).toHaveLength(1)
       expect(getThread.thread.comments[0].replies).toBeDefined()
       expect(getThread.thread.comments[0].replies).toHaveLength(0)
-      expect(getThread.thread).toStrictEqual({
-        id: 'thread-123',
-        title: 'title thread',
-        body: 'body thread',
-        date: getThread.thread.date,
-        username: 'dicoding',
-        comments: [
-          {
-            id: 'comment-123',
-            username: 'dicoding',
-            date: getThread.thread.comments[0].date,
-            content: 'test comment',
-            replies: []
-          }
-        ]
-      })
+      expect(getThread).toStrictEqual(new GetThreadWithComments([
+        {
+          thread_id: 'thread-123',
+          thread_title: 'title thread',
+          thread_body: 'body thread',
+          thread_owner: 'dicoding',
+          thread_date: getThread.thread.date,
+          comment_id: 'comment-123',
+          comment_content: 'test comment',
+          comment_owner: 'dicoding',
+          comment_date: getThread.thread.comments[0].date,
+          comment_is_delete: false,
+          comment_parent_id: null
+        },
+      ]))
     })
 
     it('should return thread with comment and replies', async () => {
@@ -287,9 +260,7 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      const thread =
-        await ThreadTableTestHelper.verifyAvailableThread('thread-123')
-      expect(thread).toHaveLength(1)
+      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
 
       await CommentTableTestHelper.addComment({
         id: 'comment-123',
@@ -297,9 +268,8 @@ describe('ThreadRepositoryPostgres', () => {
         owner: 'user-123',
         threadId: 'thread-123'
       })
-      const comment =
-        await CommentTableTestHelper.verifyAvailableComment('comment-123')
-      expect(comment).toHaveLength(1)
+
+      await expect(CommentTableTestHelper.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
 
       await CommentTableTestHelper.addComment({
         id: 'comment-1234',
@@ -308,9 +278,7 @@ describe('ThreadRepositoryPostgres', () => {
         threadId: 'thread-123',
         commentId: 'comment-123'
       })
-      const replies =
-        await CommentTableTestHelper.verifyAvailableComment('comment-1234')
-      expect(replies).toHaveLength(1)
+      await expect(CommentTableTestHelper.verifyAvailableComment('comment-1234')).resolves.not.toThrowError(NotFoundError)
 
       const registerThread = new GetThread({ threadId: 'thread-123' })
       const getThread = await threadRepositoryPostgres.getThread(registerThread)
@@ -319,29 +287,34 @@ describe('ThreadRepositoryPostgres', () => {
       expect(getThread.thread.comments).toHaveLength(1)
       expect(getThread.thread.comments[0].replies).toBeDefined()
       expect(getThread.thread.comments[0].replies).toHaveLength(1)
-      expect(getThread.thread).toStrictEqual({
-        id: 'thread-123',
-        title: 'title thread',
-        body: 'body thread',
-        date: getThread.thread.date,
-        username: 'dicoding',
-        comments: [
-          {
-            id: 'comment-123',
-            username: 'dicoding',
-            date: getThread.thread.comments[0].date,
-            content: 'test comment',
-            replies: [
-              {
-                id: 'comment-1234',
-                username: 'dicoding',
-                date: getThread.thread.comments[0].replies[0].date,
-                content: 'test replies'
-              }
-            ]
-          }
-        ]
-      })
+      expect(getThread).toStrictEqual(new GetThreadWithComments([
+        {
+          thread_id: 'thread-123',
+          thread_title: 'title thread',
+          thread_body: 'body thread',
+          thread_owner: 'dicoding',
+          thread_date: getThread.thread.date,
+          comment_id: 'comment-123',
+          comment_content: 'test comment',
+          comment_owner: 'dicoding',
+          comment_date: getThread.thread.comments[0].date,
+          comment_is_delete: false,
+          comment_parent_id: null
+        },
+        {
+          thread_id: 'thread-123',
+          thread_title: 'title thread',
+          thread_body: 'body thread',
+          thread_owner: 'dicoding',
+          thread_date: getThread.thread.date,
+          comment_id: 'comment-1234',
+          comment_content: 'test replies',
+          comment_owner: 'dicoding',
+          comment_date: getThread.thread.comments[0].replies[0].date,
+          comment_is_delete: false,
+          comment_parent_id: 'comment-123'
+        },
+      ]))
     })
   })
 })

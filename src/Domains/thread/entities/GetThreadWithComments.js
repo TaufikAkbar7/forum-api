@@ -31,72 +31,58 @@ class GetThreadWithComments {
     }
   }
 
-  _mappingResponse(data = []) {
-    const mappingResults = data.reduce((acc, item) => {
-      let obj = acc
-      if (!obj) {
-        obj = {
-          id: item.thread_id,
-          title: item.thread_title,
-          body: item.thread_body,
-          date: item.thread_date,
-          username: item.thread_owner,
-          comments: []
+  _mappingResponse(data) {
+    if (!data || data.length === 0) return null;
+
+    const result = {
+      id: data[0].thread_id,
+      title: data[0].thread_title,
+      body: data[0].thread_body,
+      date: data[0].thread_date,
+      username: data[0].thread_owner,
+      comments: []
+    };
+    
+    // handle comments is empty array
+    if (data.length === 1 && !data[0].comment_id) {
+      return result
+    }
+
+    const commentMap = {};
+    
+    for (const item of data) {
+      const {
+        comment_id,
+        comment_owner,
+        comment_date,
+        comment_content,
+        comment_is_delete,
+        comment_parent_id
+      } = item;
+  
+      const commentObj = {
+        id: comment_id,
+        username: comment_owner,
+        date: comment_date,
+        content: comment_is_delete ? '**komentar telah dihapus**' : comment_content
+      };
+  
+      if (!comment_parent_id) {
+        // comment without reply
+        commentMap[comment_id] = { ...commentObj, replies: [] };
+        result.comments.push(commentMap[comment_id]);
+      } else {
+        // reply, then check if parent exists
+        if (commentMap[comment_parent_id]) {
+          commentMap[comment_parent_id].replies.push({
+            ...commentObj,
+            content: comment_is_delete ? '**balasan telah dihapus**' : comment_content
+          });
         }
       }
+    }
 
-      if (
-        item.comment_id &&
-        item.comment_owner &&
-        item.comment_date &&
-        item.comment_content
-      ) {
-        const comment = {
-          id: item.comment_id,
-          username: item.comment_owner,
-          date: item.comment_date,
-          content: item.comment_is_delete
-            ? '**komentar telah dihapus**'
-            : item.comment_content,
-          replies: []
-        }
-
-        if (!item.reply_comment_id) {
-          obj.comments.push(comment)
-        } else {
-          const isCommentExists = obj.comments.findIndex(
-            com => com.id === item.comment_id
-          )
-          const reply = item.reply_is_delete
-            ? '**balasan telah dihapus**'
-            : item.reply_content
-
-          if (isCommentExists >= 0) {
-            obj.comments[isCommentExists].replies.push({
-              id: item.reply_id,
-              username: item.reply_owner,
-              date: item.reply_date,
-              content: reply
-            })
-          } else {
-            obj.comments.push({
-              ...comment,
-              replies: [
-                {
-                  id: item.reply_id,
-                  username: item.reply_owner,
-                  date: item.reply_date,
-                  content: reply
-                }
-              ]
-            })
-          }
-        }
-      }
-      return obj
-    }, null)
-
-    return mappingResults
+    return result
   }
 }
 
