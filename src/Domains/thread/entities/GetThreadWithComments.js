@@ -32,8 +32,6 @@ class GetThreadWithComments {
   }
 
   _mappingResponse(data) {
-    if (!data || data.length === 0) return null
-
     const result = {
       id: data[0].thread_id,
       title: data[0].thread_title,
@@ -73,7 +71,8 @@ class GetThreadWithComments {
         // comment without reply
         commentMap[comment_id] = { ...commentObj, replies: [] }
         result.comments.push(commentMap[comment_id])
-      } else if (commentMap[comment_parent_id]) {
+      }
+      if (comment_parent_id && commentMap[comment_parent_id]) {
         // reply, then check if parent exists
         commentMap[comment_parent_id].replies.push({
           ...commentObj,
