@@ -200,7 +200,7 @@ describe('a GetThreadWithComments entities', () => {
               username: payload[1].comment_owner,
               date: payload[1].comment_date,
               content: '**balasan telah dihapus**'
-            },
+            }
           ]
         }
       ]

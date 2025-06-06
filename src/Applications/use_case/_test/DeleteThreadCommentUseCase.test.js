@@ -10,13 +10,6 @@ describe('DeleteThreadCommentUseCase', () => {
       commentId: 'comment-123',
       authId: 'user-123'
     }
-    const exampleAvailThread = ['thread-123']
-    const exampleAvailComment = ['comment-123']
-    const exampleOwnerComment = {
-      id: 'thread-123',
-      comment_id: 'comment-123',
-      comment_owner: 'user-123'
-    }
 
     const mockDeleteCommentThread = new DeleteThreadComment(payload)
     const mockThreadRepo = new ThreadRepository()
@@ -24,13 +17,13 @@ describe('DeleteThreadCommentUseCase', () => {
 
     mockThreadRepo.verifyAvailableThread = jest
       .fn()
-      .mockImplementation(() => Promise.resolve(exampleAvailThread))
+      .mockImplementation(() => Promise.resolve())
     mockCommentRepo.verifyAvailableComment = jest
       .fn()
-      .mockImplementation(() => Promise.resolve(exampleAvailComment))
+      .mockImplementation(() => Promise.resolve())
     mockThreadRepo.verifyOwnerComment = jest
       .fn()
-      .mockImplementation(() => Promise.resolve(exampleOwnerComment))
+      .mockImplementation(() => Promise.resolve())
     mockCommentRepo.deleteComment = jest
       .fn()
       .mockImplementation(() => Promise.resolve())

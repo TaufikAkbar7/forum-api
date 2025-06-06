@@ -33,7 +33,9 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        ThreadTableTestHelper.verifyAvailableThread('thread-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -46,11 +48,13 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      expect(result).toStrictEqual(new CreatedThreadComment({
-        content: 'test comment',
-        owner: 'user-123',
-        id: 'comment-123'
-      }))
+      expect(result).toStrictEqual(
+        new CreatedThreadComment({
+          content: 'test comment',
+          owner: 'user-123',
+          id: 'comment-123'
+        })
+      )
     })
 
     it('should success add replies', async () => {
@@ -75,7 +79,9 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        ThreadTableTestHelper.verifyAvailableThread('thread-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -89,7 +95,9 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      await expect(CommentTableTestHelper.verifyAvailableComment('comment-155')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        CommentTableTestHelper.verifyAvailableComment('comment-155')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const result = await commentRepositoryPostgres.addComment({
         content: 'test replies',
@@ -98,11 +106,13 @@ describe('CommentRepositoryPostgres', () => {
         commentId: 'comment-123'
       })
 
-      expect(result).toStrictEqual(new CreatedThreadComment({
-        content: 'test replies',
-        owner: 'user-234',
-        id: 'comment-123'
-      }))
+      expect(result).toStrictEqual(
+        new CreatedThreadComment({
+          content: 'test replies',
+          owner: 'user-234',
+          id: 'comment-123'
+        })
+      )
     })
   })
 
@@ -129,7 +139,9 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        ThreadTableTestHelper.verifyAvailableThread('thread-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -142,7 +154,9 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      await expect(commentRepositoryPostgres.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        commentRepositoryPostgres.verifyAvailableComment('comment-123')
+      ).resolves.not.toThrowError(NotFoundError)
     })
   })
 
@@ -161,7 +175,9 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        ThreadTableTestHelper.verifyAvailableThread('thread-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -190,7 +206,9 @@ describe('CommentRepositoryPostgres', () => {
         owner: 'user-123'
       })
 
-      await expect(ThreadTableTestHelper.verifyAvailableThread('thread-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        ThreadTableTestHelper.verifyAvailableThread('thread-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const commentRepositoryPostgres = new CommentRepositoryPostgres(
         pool,
@@ -204,14 +222,17 @@ describe('CommentRepositoryPostgres', () => {
         threadId: 'thread-123'
       })
 
-      await expect(CommentTableTestHelper.verifyAvailableComment('comment-123')).resolves.not.toThrowError(NotFoundError)
+      await expect(
+        CommentTableTestHelper.verifyAvailableComment('comment-123')
+      ).resolves.not.toThrowError(NotFoundError)
 
       const result = await commentRepositoryPostgres.deleteComment({
         threadId: 'thread-123',
         commentId: 'comment-123'
       })
 
-      const getComment = await CommentTableTestHelper.getCommentById('comment-123')
+      const getComment =
+        await CommentTableTestHelper.getCommentById('comment-123')
 
       expect(getComment.is_delete).toBe(true)
       expect(result).toBe(undefined)

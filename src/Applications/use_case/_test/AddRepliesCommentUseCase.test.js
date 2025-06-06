@@ -2,6 +2,7 @@ const CreateThreadComment = require('../../../Domains/comment/entities/CreateThr
 const ThreadRepository = require('../../../Domains/thread/ThreadRepository')
 const CommentRepository = require('../../../Domains/comment/CommentRepository')
 const AddRepliesCommentUseCase = require('../AddRepliesCommentUseCase')
+const CreatedThreadComment = require('../../../Domains/comment/entities/CreatedThreadComment')
 
 describe('AddRepliesCommentUseCase', () => {
   it('should orchestrating the add replies action correctly', async () => {
@@ -25,13 +26,19 @@ describe('AddRepliesCommentUseCase', () => {
 
     mockThreadRepo.verifyAvailableThread = jest
       .fn()
-      .mockImplementation(() => Promise.resolve(exampleAvailThread))
+      .mockImplementation(() => Promise.resolve())
     mockCommentRepo.verifyAvailableComment = jest
       .fn()
-      .mockImplementation(() => Promise.resolve(exampleAvailComment))
-    mockCommentRepo.addComment = jest
-      .fn()
-      .mockImplementation(() => Promise.resolve(exampleCommentCreated))
+      .mockImplementation(() => Promise.resolve())
+    mockCommentRepo.addComment = jest.fn().mockImplementation(() =>
+      Promise.resolve(
+        new CreatedThreadComment({
+          id: 'comment-123',
+          content: 'test replies',
+          owner: 'user-123'
+        })
+      )
+    )
 
     const getAddRepliesCommentUseCase = new AddRepliesCommentUseCase({
       threadRepository: mockThreadRepo,
@@ -39,7 +46,9 @@ describe('AddRepliesCommentUseCase', () => {
     })
     const result = await getAddRepliesCommentUseCase.execute(payload)
 
-    expect(result).toStrictEqual(exampleCommentCreated)
+    expect(result).toStrictEqual(
+      new CreatedThreadComment(exampleCommentCreated)
+    )
     expect(mockThreadRepo.verifyAvailableThread).toBeCalledWith(
       payload.threadId
     )

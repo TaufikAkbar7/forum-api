@@ -30,6 +30,7 @@
     "no-process-exit": "off",
     "class-methods-use-this": "off",
     "no-underscore-dangle": "off",
-    "camelcase": "off"
+    "camelcase": "off",
+    "no-restricted-syntax": ["error", "ForInStatement", "LabeledStatement", "WithStatement"]
   }
 }

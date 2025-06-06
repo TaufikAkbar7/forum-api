@@ -32,7 +32,7 @@ class GetThreadWithComments {
   }
 
   _mappingResponse(data) {
-    if (!data || data.length === 0) return null;
+    if (!data || data.length === 0) return null
 
     const result = {
       id: data[0].thread_id,
@@ -41,15 +41,15 @@ class GetThreadWithComments {
       date: data[0].thread_date,
       username: data[0].thread_owner,
       comments: []
-    };
-    
+    }
+
     // handle comments is empty array
     if (data.length === 1 && !data[0].comment_id) {
       return result
     }
 
-    const commentMap = {};
-    
+    const commentMap = {}
+
     for (const item of data) {
       const {
         comment_id,
@@ -58,27 +58,29 @@ class GetThreadWithComments {
         comment_content,
         comment_is_delete,
         comment_parent_id
-      } = item;
-  
+      } = item
+
       const commentObj = {
         id: comment_id,
         username: comment_owner,
         date: comment_date,
-        content: comment_is_delete ? '**komentar telah dihapus**' : comment_content
-      };
-  
+        content: comment_is_delete
+          ? '**komentar telah dihapus**'
+          : comment_content
+      }
+
       if (!comment_parent_id) {
         // comment without reply
-        commentMap[comment_id] = { ...commentObj, replies: [] };
-        result.comments.push(commentMap[comment_id]);
-      } else {
+        commentMap[comment_id] = { ...commentObj, replies: [] }
+        result.comments.push(commentMap[comment_id])
+      } else if (commentMap[comment_parent_id]) {
         // reply, then check if parent exists
-        if (commentMap[comment_parent_id]) {
-          commentMap[comment_parent_id].replies.push({
-            ...commentObj,
-            content: comment_is_delete ? '**balasan telah dihapus**' : comment_content
-          });
-        }
+        commentMap[comment_parent_id].replies.push({
+          ...commentObj,
+          content: comment_is_delete
+            ? '**balasan telah dihapus**'
+            : comment_content
+        })
       }
     }
 
